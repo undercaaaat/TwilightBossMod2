@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Specification-Title: twilightbossaddon
+Specification-Vendor: undercat
+Specification-Version: 1
+Implementation-Title: twilightbossaddon
+Implementation-Version: 1.0.0
+Implementation-Vendor: undercat
+Implementation-Timestamp: 2025-11-19T16:11:03+0800
+

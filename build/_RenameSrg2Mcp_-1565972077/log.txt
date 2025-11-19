@@ -1,0 +1,15 @@
+Java Launcher: C:\Program Files\Eclipse Adoptium\jdk-17.0.17.10-hotspot\bin\java.exe
+Arguments: '--task, SRG_TO_MCP, --input, C:\Users\lizhiyuan\.gradle\caches\modules-2\files-2.1\curse.maven\twilight-forest-227639\4865711\458d499f91d346cc086fe527373f7d154869518e\twilight-forest-227639-4865711.jar, --output, C:\Users\lizhiyuan\.gradle\caches\forge_gradle\deobf_dependencies\curse\maven\twilight-forest-227639\4865711_mapped_official_1.20.1\twilight-forest-227639-4865711_mapped_official_1.20.1.jar, --mcp, C:\Users\lizhiyuan\.gradle\caches\forge_gradle\mcp_repo\net\minecraft\mapping\1.20.1\mapping-1.20.1-mapping.zip, --strip-signatures'
+Classpath:
+ - C:\Users\lizhiyuan\.gradle\caches\forge_gradle\maven_downloader\net\minecraftforge\installertools\1.4.4\installertools-1.4.4-fatjar.jar
+Working directory: D:\MineCraft\new\设计\新建文件夹\TwilightBossMod2\build\_RenameSrg2Mcp_-1565972077
+Main class: net.minecraftforge.installertools.ConsoleTool
+====================================
+Task: SRG_TO_MCP
+Input:  C:\Users\lizhiyuan\.gradle\caches\modules-2\files-2.1\curse.maven\twilight-forest-227639\4865711\458d499f91d346cc086fe527373f7d154869518e\twilight-forest-227639-4865711.jar
+Output: C:\Users\lizhiyuan\.gradle\caches\forge_gradle\deobf_dependencies\curse\maven\twilight-forest-227639\4865711_mapped_official_1.20.1\twilight-forest-227639-4865711_mapped_official_1.20.1.jar
+MCP:    C:\Users\lizhiyuan\.gradle\caches\forge_gradle\mcp_repo\net\minecraft\mapping\1.20.1\mapping-1.20.1-mapping.zip
+Loading MCP Data
+Processing ZIP file
+Stripped Manifest of sha digests
+Process complete
