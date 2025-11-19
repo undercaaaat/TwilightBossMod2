@@ -23,7 +23,7 @@ public class CommonEvents {
         LivingEntity target = event.getEntity();
         net.minecraft.world.damagesource.DamageSource source = event.getSource();
 
-        // --- 1. 玩家易伤效果处理 (一阶段寒冰符文) ---
+        // --- 1. 易伤检测 (优先) ---
         if (target.getTags().contains(VULNERABLE_TAG)) {
             long expiry = target.getPersistentData().getLong(VULNERABLE_EXPIRY_TAG);
             if (target.level().getGameTime() < expiry) {
@@ -33,41 +33,18 @@ public class CommonEvents {
             }
         }
 
-        // --- 2. 二阶段 BOSS 被动: 吸血与真实伤害 ---
-        if (source.getEntity() instanceof NarratorEntity boss && boss.getPhase() == 2) {
-            // 避免魔法伤害再次触发此逻辑 (防止递归)
-            if (source.is(DamageTypes.MAGIC)) {
-                // 只有吸血，没有额外伤害
-                float healAmount = event.getAmount() * 0.10f;
-                if (healAmount > 0) boss.heal(healAmount);
-                return;
-            }
-
-            // 伤害转化：50% 物理 + 50% 维度意志(Magic/True)
-            float originalDamage = event.getAmount();
-            float physicalPart = originalDamage * 0.5f;
-            float dimensionWillPart = originalDamage * 0.5f;
-
-            // 设置本次物理伤害为 50%
-            event.setAmount(physicalPart);
-
-            // 额外造成 50% 真实伤害
-            target.invulnerableTime = 0;
-            target.hurt(boss.damageSources().magic(), dimensionWillPart);
-
-            return;
-        }
-
-        // --- 3. 一阶段符文与召唤物伤害 ---
+        // --- 2. 符文伤害逻辑 (一阶段) ---
         if (source.getDirectEntity() instanceof Snowball rune && rune.getTags().contains("NarratorRune")) {
+            // 防止无限递归
             if (source.is(DamageTypes.MAGIC)) return;
 
             float maxHealth = target.getMaxHealth();
-            float baseRuneDamage = maxHealth * 0.07f;
+            // 基础伤害：7% 最大生命值，保底 4 点
+            float baseRuneDamage = Math.max(4.0f, maxHealth * 0.07f);
             float extraDamage = 0.0f;
 
             if (rune.getTags().contains("RuneType:Fire")) {
-                extraDamage += target.getHealth() * 0.10f;
+                extraDamage += target.getHealth() * 0.10f; // 火焰：10% 当前生命
                 target.setSecondsOnFire(3);
             } else if (rune.getTags().contains("RuneType:Ice")) {
                 target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 140, 1));
@@ -78,15 +55,43 @@ public class CommonEvents {
                 target.addEffect(new MobEffectInstance(MobEffects.DARKNESS, 40, 0));
             }
 
+            float totalDamage = baseRuneDamage + extraDamage;
+
+            // 核心修复：取消原投掷物伤害(0)，手动施加魔法伤害
             event.setCanceled(true);
-            target.invulnerableTime = 0;
-            target.hurt(target.damageSources().magic(), baseRuneDamage + extraDamage);
+            target.invulnerableTime = 0; // 穿透无敌帧，确保连发命中
+            target.hurt(target.damageSources().magic(), totalDamage);
+            return; // 结束处理
         }
-        // 召唤物伤害增强逻辑 (TalesOfTheFallenGoal.MINION_TAG)
+
+        // --- 3. 二阶段 Boss 被动 (吸血 + 真伤) ---
+        if (source.getEntity() instanceof NarratorEntity boss && boss.getPhase() == 2) {
+            if (source.is(DamageTypes.MAGIC)) {
+                // 仅处理吸血
+                float healAmount = event.getAmount() * 0.10f;
+                if (healAmount > 0) boss.heal(healAmount);
+                return;
+            }
+
+            float originalDamage = event.getAmount();
+            if (originalDamage < 1.0f) return;
+
+            float physicalPart = originalDamage * 0.5f;
+            float dimensionWillPart = originalDamage * 0.5f;
+
+            // 修改本次伤害为一半
+            event.setAmount(physicalPart);
+
+            // 额外施加一半真实伤害
+            target.invulnerableTime = 0;
+            target.hurt(boss.damageSources().magic(), dimensionWillPart);
+            return;
+        }
+
+        // --- 4. 召唤物增强 (维度意志) ---
         else if (source.getEntity() instanceof LivingEntity attacker && attacker.getTags().contains(TalesOfTheFallenGoal.MINION_TAG)) {
             if (!source.is(DamageTypes.MAGIC)) {
                 float dimensionWillDamage = event.getAmount() * 0.1f;
-                target.invulnerableTime = 0;
                 target.hurt(target.damageSources().magic(), dimensionWillDamage);
             }
         }
